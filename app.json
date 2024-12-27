@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Tawk2_android",
+    "slug": "Tawk2_android",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/welcome.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/welcome.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.sumitsharma1510.Tawk2_android"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/welcome.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "16d78c68-df09-4d49-ba37-785b8305beda"
+      }
+    }
+  }
+}
