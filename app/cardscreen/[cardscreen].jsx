@@ -27,7 +27,7 @@ export default function CardScreen() {
   const [categoryTitle, setCategoryTitle] = useState("");
   const [categoryPrompt, setCategoryPrompt] = useState("");
   const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(10); // Track the current index
+  const [currentIndex, setCurrentIndex] = useState(); // Track the current index
   const flatListRef = useRef(null);
   const [loadingMore, setLoadingMore] = useState(false); // To manage loading state
   const [currentQuestions, setCurrentQuestions] = useState([]);
@@ -37,28 +37,36 @@ export default function CardScreen() {
   const resumeBottomSheetRef = useRef();
 
   useEffect(() => {
+    // Set the categoryTitle based on cardscreen
     categoryTitleFunction(cardscreen);
   }, [cardscreen]);
 
   useEffect(() => {
     const initialize = async () => {
       if (categoryTitle) {
-        await fetchCurrentQuestions(categoryTitle);
+        await fetchCurrentQuestions(categoryTitle); // Fetch questions for the category
+        await getCurrentIndex(categoryTitle, setCurrentIndex); // Get and set saved index
       }
     };
 
     initialize();
   }, [categoryTitle]);
 
-  const getCurrentIndex = async () => {
+  const getCurrentIndex = async (categoryTitle, setCurrentIndex) => {
     try {
-      const key = `category_${categoryTitle}`; // Unique key for the category
-      const storedIndex = await AsyncStorage.getItem(key);
-
-      setCurrentIndex(storedIndex);
-    } catch (e) {
-      console.error("Error retrieving category index", e);
-      return 0;
+      const key = `category_${categoryTitle}`;
+      const savedIndex = await AsyncStorage.getItem(key);
+      if (savedIndex !== null) {
+        setCurrentIndex(parseInt(savedIndex, 10)); // Set the saved index
+        console.log(
+          `Retrieved index ${savedIndex} for category: ${categoryTitle}`
+        );
+      } else {
+        setCurrentIndex(0);
+        console.log(`No saved index for category: ${categoryTitle}`);
+      }
+    } catch (error) {
+      console.error("Error fetching index from AsyncStorage:", error);
     }
   };
 
@@ -173,7 +181,7 @@ export default function CardScreen() {
       ];
 
       setCurrentQuestions(questionsWithLoading);
-      console.log(questionsWithLoading);
+      // console.log(questionsWithLoading);
       console.log("Fetched and updated current questions successfully.");
     } catch (e) {
       console.error("Error fetching current questions:", e);
@@ -296,6 +304,7 @@ export default function CardScreen() {
       const parsedContent = JSON.parse(data.choices[0].message.content);
 
       await handleGenerateQuestions(categoryTitle, parsedContent.questions);
+      await AsyncStorage.removeItem(`category_${categoryTitle}`);
       router.back();
     } catch (error) {
       console.error("Error fetching more cards:", error);
@@ -306,9 +315,20 @@ export default function CardScreen() {
 
   const handleScroll = (event) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const itemWidth = wp(100); // Width of each item (adjust to your card's width)
+    const itemWidth = wp(100);
     const index = Math.floor(contentOffsetX / itemWidth);
     setCurrentIndex(index);
+    saveCurrentIndex(index);
+  };
+
+  const saveCurrentIndex = async (index) => {
+    try {
+      const key = `category_${categoryTitle}`;
+      await AsyncStorage.setItem(key, index.toString());
+      console.log(`Index ${index} saved with key: ${key}`);
+    } catch (error) {
+      console.error("Error saving index to AsyncStorage:", error);
+    }
   };
 
   const scrollToNext = () => {
@@ -404,8 +424,8 @@ export default function CardScreen() {
               snapToAlignment="center"
               onEndReached={fetchMoreCards}
               onEndReachedThreshold={0.5}
-              onMomentumScrollEnd={handleScroll}
               initialScrollIndex={currentIndex}
+              onMomentumScrollEnd={handleScroll}
               getItemLayout={(data, index) => ({
                 length: wp(100), // Width of each item
                 offset: wp(100) * index,
