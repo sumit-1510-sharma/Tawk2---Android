@@ -27,7 +27,7 @@ export default function CardScreen() {
   const [categoryTitle, setCategoryTitle] = useState("");
   const [categoryPrompt, setCategoryPrompt] = useState("");
   const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(0); // Track the current index
+  const [currentIndex, setCurrentIndex] = useState(10); // Track the current index
   const flatListRef = useRef(null);
   const [loadingMore, setLoadingMore] = useState(false); // To manage loading state
   const [currentQuestions, setCurrentQuestions] = useState([]);
@@ -40,21 +40,10 @@ export default function CardScreen() {
     categoryTitleFunction(cardscreen);
   }, [cardscreen]);
 
-  // useEffect(() => {
-  //   const initialize = async () => {
-  //     if (categoryTitle) {
-  //       await fetchCurrentQuestions(categoryTitle);
-  //     }
-  //   };
-
-  //   initialize();
-  // }, [categoryTitle]);
-
   useEffect(() => {
     const initialize = async () => {
       if (categoryTitle) {
         await fetchCurrentQuestions(categoryTitle);
-        // await getCurrentIndex();
       }
     };
 
@@ -184,6 +173,7 @@ export default function CardScreen() {
       ];
 
       setCurrentQuestions(questionsWithLoading);
+      console.log(questionsWithLoading);
       console.log("Fetched and updated current questions successfully.");
     } catch (e) {
       console.error("Error fetching current questions:", e);
@@ -321,37 +311,6 @@ export default function CardScreen() {
     setCurrentIndex(index);
   };
 
-  // const saveCurrentIndex = async (category, index) => {
-  //   try {
-  //     const key = `category_${category}`; // Unique key for the category
-  //     await AsyncStorage.setItem(key, JSON.stringify(index));
-  //   } catch (e) {
-  //     console.error("Error saving category index", e);
-  //   }
-  // };
-
-  // AsyncStorage.setItem(`category_${categoryTitle}`, JSON.stringify(index));
-
-  // const handlePrevious = () => {
-  //   if (currentIndex > 0) {
-  //     flatListRef.current.scrollToIndex({
-  //       index: currentIndex - 1,
-  //       animated: true,
-  //     });
-  //     setCurrentIndex((prevIndex) => prevIndex - 1);
-  //   }
-  // };
-
-  // const handleNext = () => {
-  //   if (currentIndex < currentQuestions.length - 1) {
-  //     flatListRef.current.scrollToIndex({
-  //       index: currentIndex + 1,
-  //       animated: true,
-  //     });
-  //     setCurrentIndex((prevIndex) => prevIndex + 1);
-  //   }
-  // };
-
   const scrollToNext = () => {
     if (flatListRef.current && currentIndex < currentQuestions.length - 1) {
       setCurrentIndex(currentIndex + 1);
@@ -430,22 +389,37 @@ export default function CardScreen() {
             </TouchableOpacity>
           </View>
 
-          <FlatList
-            ref={flatListRef}
-            data={currentQuestions}
-            renderItem={({ item, index }) => (
-              <Card item={item} category={categoryTitle} index={index} />
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            pagingEnabled
-            decelerationRate="fast"
-            snapToAlignment="center"
-            onEndReached={fetchMoreCards}
-            onEndReachedThreshold={0.5}
-            onMomentumScrollEnd={handleScroll}
-          />
+          {currentQuestions.length > 0 && typeof currentIndex === "number" && (
+            <FlatList
+              ref={flatListRef}
+              data={currentQuestions}
+              renderItem={({ item, index }) => (
+                <Card item={item} category={categoryTitle} index={index} />
+              )}
+              keyExtractor={(item, index) => index.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              pagingEnabled
+              decelerationRate="fast"
+              snapToAlignment="center"
+              onEndReached={fetchMoreCards}
+              onEndReachedThreshold={0.5}
+              onMomentumScrollEnd={handleScroll}
+              initialScrollIndex={currentIndex}
+              getItemLayout={(data, index) => ({
+                length: wp(100), // Width of each item
+                offset: wp(100) * index,
+                index,
+              })}
+              onScrollToIndexFailed={(error) => {
+                console.warn("Scroll to index failed:", error);
+                flatListRef.current?.scrollToOffset({
+                  offset: 0,
+                  animated: false,
+                }); // Fallback
+              }}
+            />
+          )}
 
           {/* // onScroll={handleScroll}
             // scrollEventThrottle={16}
