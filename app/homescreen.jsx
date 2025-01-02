@@ -14,6 +14,7 @@ import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { wp } from "../helpers/common";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 
 const Homescreen = () => {
@@ -652,7 +653,14 @@ const Homescreen = () => {
     <ScreenWrapper bg="#121212" style={styles.container}>
       <StatusBar style="light" />
       <View style={styles.header}>
-        <Text style={styles.packText}>Select a pack</Text>
+        <TouchableOpacity style={styles.unlockPacks}>
+          <Text>Unlock all packs now. Let's go </Text>
+          <Ionicons
+            name="arrow-forward-circle-outline"
+            size={20}
+            color="black"
+          />
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => router.push("/profile")}
           style={styles.profileIconBg}
@@ -660,6 +668,8 @@ const Homescreen = () => {
           <FontAwesome5 name="user" size={20} color="black" />
         </TouchableOpacity>
       </View>
+
+      <Text style={styles.packText}>Select a pack</Text>
       {/* Render content using FlatList */}
       <FlatList
         ref={flatListRef}
@@ -709,9 +719,18 @@ const styles = StyleSheet.create({
   },
   header: {
     marginHorizontal: 12,
+    marginTop: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  unlockPacks: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
   profileIconBg: {
     backgroundColor: "white",
@@ -722,9 +741,9 @@ const styles = StyleSheet.create({
   packText: {
     fontSize: 20,
     color: "white",
-    marginVertical: 20,
-    // marginHorizontal: wp(2.5),
-    // fontWeight: "bold",
+    marginTop: 20,
+    marginBottom: 8,
+    marginHorizontal: 12,
     fontFamily: "SyneFont",
   },
   content: {

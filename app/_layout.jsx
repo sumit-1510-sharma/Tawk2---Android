@@ -15,6 +15,7 @@ const _layout = () => {
       <Stack.Screen name="profile" />
       <Stack.Screen name="history" />
       <Stack.Screen name="favourites" />
+      <Stack.Screen name="bottomsheet" />
     </Stack>
   );
 };

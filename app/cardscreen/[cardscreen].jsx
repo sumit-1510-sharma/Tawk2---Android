@@ -5,8 +5,7 @@ import {
   View,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
-  Button,
+  Dimensions,
 } from "react-native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { StatusBar } from "expo-status-bar";
@@ -14,6 +13,13 @@ import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import Card from "../../components/Card";
 import * as SQLite from "expo-sqlite";
+import { wp } from "../../helpers/common";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import PackBottomSheet from "../../components/PackBottomSheet";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import CategoryBottomSheet from "../../components/CategoryBottomSheet";
+import { Ionicons } from "@expo/vector-icons";
+import ResumeBottomSheet from "../../components/ResumeBottomSheet";
 
 export default function CardScreen() {
   const { cardscreen } = useLocalSearchParams(); // Get the dynamic category from URL
@@ -25,16 +31,47 @@ export default function CardScreen() {
   const flatListRef = useRef(null);
   const [loadingMore, setLoadingMore] = useState(false); // To manage loading state
   const [currentQuestions, setCurrentQuestions] = useState([]);
+  const { width: SCREEN_WIDTH } = Dimensions.get("window");
+  const bottomSheetRef = useRef();
+  const categoryBottomSheetRef = useRef();
+  const resumeBottomSheetRef = useRef();
 
   useEffect(() => {
     categoryTitleFunction(cardscreen);
   }, [cardscreen]);
 
+  // useEffect(() => {
+  //   const initialize = async () => {
+  //     if (categoryTitle) {
+  //       await fetchCurrentQuestions(categoryTitle);
+  //     }
+  //   };
+
+  //   initialize();
+  // }, [categoryTitle]);
+
   useEffect(() => {
-    if (categoryTitle) {
-      fetchCurrentQuestions(categoryTitle);
-    }
+    const initialize = async () => {
+      if (categoryTitle) {
+        await fetchCurrentQuestions(categoryTitle);
+        // await getCurrentIndex();
+      }
+    };
+
+    initialize();
   }, [categoryTitle]);
+
+  const getCurrentIndex = async () => {
+    try {
+      const key = `category_${categoryTitle}`; // Unique key for the category
+      const storedIndex = await AsyncStorage.getItem(key);
+
+      setCurrentIndex(storedIndex);
+    } catch (e) {
+      console.error("Error retrieving category index", e);
+      return 0;
+    }
+  };
 
   const categoryTitleFunction = (cardscreen) => {
     let title = "";
@@ -159,22 +196,6 @@ export default function CardScreen() {
     }
   };
 
-  const handleNext = () => {
-    if (currentIndex < entries.length - 1) {
-      const newIndex = currentIndex + 1;
-      setCurrentIndex(newIndex);
-      flatListRef.current?.scrollToIndex({ index: newIndex });
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      const newIndex = currentIndex - 1;
-      setCurrentIndex(newIndex);
-      flatListRef.current?.scrollToIndex({ index: newIndex });
-    }
-  };
-
   const moveToHistory = async (db, category) => {
     console.log(`Moving questions of category "${category}" to history`);
     try {
@@ -293,60 +314,201 @@ export default function CardScreen() {
     }
   };
 
-  return (
-    <ScreenWrapper bg="#121212">
-      <StatusBar style="light" />
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Text style={styles.backButtonText}>{"<"}</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{categoryTitle}</Text>
-        </View>
-        <FlatList
-          ref={flatListRef} // Attach ref to FlatList
-          data={currentQuestions}
-          renderItem={({ item, index }) => (
-            <Card item={item} category={categoryTitle} index={index} />
-          )}
-          keyExtractor={(index) => index}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          pagingEnabled
-          decelerationRate="fast"
-          snapToAlignment="center"
-          onEndReached={fetchMoreCards}
-          onEndReachedThreshold={0.5}
-        />
+  const handleScroll = (event) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const itemWidth = wp(100); // Width of each item (adjust to your card's width)
+    const index = Math.floor(contentOffsetX / itemWidth);
+    setCurrentIndex(index);
+  };
 
-        {/* Previous and Next Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            onPress={handlePrevious}
-            style={styles.button}
-            disabled={currentIndex === 0} // Disable if at the first card
-          >
-            <Text style={styles.buttonText}>Previous</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleNext}
-            style={styles.button}
-            disabled={currentIndex === entries.length - 1} // Disable if at the last card
-          >
-            <Text style={styles.buttonText}>Next</Text>
-          </TouchableOpacity>
+  // const saveCurrentIndex = async (category, index) => {
+  //   try {
+  //     const key = `category_${category}`; // Unique key for the category
+  //     await AsyncStorage.setItem(key, JSON.stringify(index));
+  //   } catch (e) {
+  //     console.error("Error saving category index", e);
+  //   }
+  // };
+
+  // AsyncStorage.setItem(`category_${categoryTitle}`, JSON.stringify(index));
+
+  // const handlePrevious = () => {
+  //   if (currentIndex > 0) {
+  //     flatListRef.current.scrollToIndex({
+  //       index: currentIndex - 1,
+  //       animated: true,
+  //     });
+  //     setCurrentIndex((prevIndex) => prevIndex - 1);
+  //   }
+  // };
+
+  // const handleNext = () => {
+  //   if (currentIndex < currentQuestions.length - 1) {
+  //     flatListRef.current.scrollToIndex({
+  //       index: currentIndex + 1,
+  //       animated: true,
+  //     });
+  //     setCurrentIndex((prevIndex) => prevIndex + 1);
+  //   }
+  // };
+
+  const scrollToNext = () => {
+    if (flatListRef.current && currentIndex < currentQuestions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+      flatListRef.current.scrollToIndex({
+        index: currentIndex + 1,
+        animated: true,
+      });
+    }
+  };
+
+  // Function to go to the previous item
+  const scrollToPrevious = () => {
+    if (flatListRef.current && currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+      flatListRef.current.scrollToIndex({
+        index: currentIndex - 1,
+        animated: true,
+      });
+    }
+  };
+
+  const renderIndicator = () => {
+    const dots = [];
+    const totalDots = 5; // Number of visible dots
+    const start = Math.max(currentIndex - 2, 0);
+    const end = Math.min(start + totalDots, currentQuestions.length);
+
+    for (let i = start; i < end; i++) {
+      let size = 8;
+      let opacity = 0.5;
+
+      if (i === currentIndex) {
+        size = 12;
+        opacity = 1;
+      } else if (Math.abs(i - currentIndex) === 1) {
+        size = 10;
+        opacity = 0.7;
+      }
+
+      dots.push(
+        <View
+          key={i}
+          style={[styles.dot, { width: size, height: size, opacity }]}
+        />
+      );
+    }
+
+    return dots;
+  };
+
+  return (
+    <GestureHandlerRootView>
+      <ScreenWrapper bg="#121212">
+        <StatusBar style="light" />
+
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <View style={styles.indexTextContainer}>
+              <Text style={styles.indexText}>
+                {currentIndex + 1} / {currentQuestions.length}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Text style={styles.backButtonText}>{"<"}</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{categoryTitle}</Text>
+            <TouchableOpacity
+              // onPress={handleOpenCategoryBottomSheet}
+              style={styles.shareButton}
+            >
+              <Ionicons name="share-outline" size={32} color="black" />
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            ref={flatListRef}
+            data={currentQuestions}
+            renderItem={({ item, index }) => (
+              <Card item={item} category={categoryTitle} index={index} />
+            )}
+            keyExtractor={(item, index) => index.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+            decelerationRate="fast"
+            snapToAlignment="center"
+            onEndReached={fetchMoreCards}
+            onEndReachedThreshold={0.5}
+            onMomentumScrollEnd={handleScroll}
+          />
+
+          {/* // onScroll={handleScroll}
+            // scrollEventThrottle={16}
+            // initialScrollIndex={currentIndex}
+            // getItemLayout={(data, index) => ({
+            //   length: wp(100),
+            //   offset: wp(100) * currentIndex,
+            //   index,
+            // })} */}
+
+          {/* <View style={styles.indicatorContainer}>{renderIndicator()}</View> */}
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              onPress={scrollToPrevious}
+              style={[
+                styles.button,
+                currentIndex === 0 && styles.disabledButton,
+              ]}
+              disabled={currentIndex === 0}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  currentIndex === 0 && styles.disabledButtonText,
+                ]}
+              >
+                Previous
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={scrollToNext}
+              style={[
+                styles.button,
+                currentIndex === currentQuestions.length - 1 &&
+                  styles.disabledButton,
+              ]}
+              disabled={currentIndex === currentQuestions.length - 1}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  currentIndex === currentQuestions.length - 1 &&
+                    styles.disabledButtonText,
+                ]}
+              >
+                Next
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </ScreenWrapper>
+      </ScreenWrapper>
+      {/* {currentIndex === 20 && <PackBottomSheet ref={bottomSheetRef} />}
+      <CategoryBottomSheet category={cardscreen} ref={categoryBottomSheetRef} />
+      <ResumeBottomSheet category={categoryTitle} ref={resumeBottomSheetRef} /> */}
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
+    position: "relative",
   },
   header: {
     position: "relative",
@@ -394,5 +556,37 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginVertical: 20,
+  },
+  disabledButton: {
+    backgroundColor: "#ddd",
+  },
+  disabledButtonText: {
+    color: "#aaa",
+  },
+  indexTextContainer: {
+    position: "absolute",
+    zIndex: 1,
+    top: 70,
+    right: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Transparent black with 50% opacity
+    borderRadius: 10, // Border radius for rounded corners
+    paddingHorizontal: 6, // Padding inside the container
+    paddingVertical: 2,
+  },
+  indexText: {
+    color: "white",
+    fontSize: 14, // Optional: Adjust text size if needed
+    fontFamily: "SyneFont",
+  },
+  indicatorContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  dot: {
+    borderRadius: 4,
+    backgroundColor: "white",
+    marginHorizontal: 4,
   },
 });

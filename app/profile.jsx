@@ -12,7 +12,6 @@ import ScreenWrapper from "../components/ScreenWrapper";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-
 export default function Profile() {
   const router = useRouter();
 
@@ -23,19 +22,21 @@ export default function Profile() {
         {/* Header */}
         <TouchableOpacity style={styles.header}>
           <Text style={styles.doneText}>Done</Text>
-          <View style={styles.profileIcon}>
-            <Image
-              source={{
-                uri: "https://placekitten.com/100/100", // Replace with profile image URL
-              }}
-              style={styles.profileImage}
-            />
-          </View>
         </TouchableOpacity>
 
         {/* Banner */}
         <View style={styles.banner}>
           <Text style={styles.bannerText}>Get closer to your close ones.</Text>
+          <TouchableOpacity style={styles.unlockButton}>
+            <Text style={styles.unlockText}>Unlock all packs</Text>
+          </TouchableOpacity>
+          <View style={styles.profileIcon}>
+            <Image
+              source={require("../assets/images/welcome.png")}
+              resizeMode="contain"
+              style={styles.profileImage}
+            />
+          </View>
         </View>
 
         <Text style={styles.settingsText}>Settings</Text>
@@ -57,7 +58,10 @@ export default function Profile() {
             <Ionicons name="chevron-forward" size={20} color="#FFF" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push("/bottomsheet")}
+          >
             <Text style={styles.settingText}>FAQs</Text>
             <Ionicons name="chevron-forward" size={20} color="#FFF" />
           </TouchableOpacity>
@@ -111,6 +115,9 @@ const styles = StyleSheet.create({
     fontFamily: "SyneFont",
   },
   profileIcon: {
+    position: "absolute",
+    right: 0,
+    top: -25,
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -119,23 +126,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   banner: {
+    position: "relative",
+    alignItems: "flex-start",
+    gap: 8,
     backgroundColor: "#000000",
     borderRadius: 10,
     borderWidth: 0.1,
     borderColor: "white",
     padding: 20,
-    marginBottom: 60,
+    marginBottom: 40,
   },
   bannerText: {
     color: "#FFF",
     fontSize: 16,
     fontWeight: "400",
-    textAlign: "center",
+    fontFamily: "SyneFont",
+  },
+  unlockButton: {
+    backgroundColor: "#FFF",
+    borderRadius: 25,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  unlockText: {
+    color: "black",
+    fontSize: 12,
     fontFamily: "SyneFont",
   },
   settingsText: {
