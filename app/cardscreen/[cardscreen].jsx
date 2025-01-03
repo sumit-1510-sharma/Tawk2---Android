@@ -20,6 +20,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import CategoryBottomSheet from "../../components/CategoryBottomSheet";
 import { Ionicons } from "@expo/vector-icons";
 import ResumeBottomSheet from "../../components/ResumeBottomSheet";
+import PaymentBottomSheet from "../../components/PaymentBottomSheet";
 
 export default function CardScreen() {
   const { cardscreen } = useLocalSearchParams(); // Get the dynamic category from URL
@@ -35,6 +36,7 @@ export default function CardScreen() {
   const bottomSheetRef = useRef();
   const categoryBottomSheetRef = useRef();
   const resumeBottomSheetRef = useRef();
+  const paymentBottomSheetRef = useRef();
 
   useEffect(() => {
     // Set the categoryTitle based on cardscreen
@@ -341,7 +343,6 @@ export default function CardScreen() {
     }
   };
 
-  // Function to go to the previous item
   const scrollToPrevious = () => {
     if (flatListRef.current && currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
@@ -352,33 +353,23 @@ export default function CardScreen() {
     }
   };
 
-  const renderIndicator = () => {
-    const dots = [];
-    const totalDots = 5; // Number of visible dots
-    const start = Math.max(currentIndex - 2, 0);
-    const end = Math.min(start + totalDots, currentQuestions.length);
+  const handleOpenCategoryBottomSheet = () => {
+    categoryBottomSheetRef.current?.expand(); // Expands the bottom sheet
+  };
 
-    for (let i = start; i < end; i++) {
-      let size = 8;
-      let opacity = 0.5;
+  const handleStartOver = async () => {
+    try {
+      const key = `category_${categoryTitle}`; // Replace with your dynamic category
+      await AsyncStorage.removeItem(key);
 
-      if (i === currentIndex) {
-        size = 12;
-        opacity = 1;
-      } else if (Math.abs(i - currentIndex) === 1) {
-        size = 10;
-        opacity = 0.7;
-      }
+      // Scroll FlatList to the first index
+      resumeBottomSheetRef.current.close();
+      flatListRef.current?.scrollToIndex({ index: 0, animated: true });
 
-      dots.push(
-        <View
-          key={i}
-          style={[styles.dot, { width: size, height: size, opacity }]}
-        />
-      );
+      console.log(`Cleared data for category ${categoryTitle}`);
+    } catch (e) {
+      console.error("Error clearing category data", e);
     }
-
-    return dots;
   };
 
   return (
@@ -398,15 +389,18 @@ export default function CardScreen() {
               onPress={() => router.back()}
               style={styles.backButton}
             >
-              <Text style={styles.backButtonText}>{"<"}</Text>
+              <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{categoryTitle}</Text>
             <TouchableOpacity
-              // onPress={handleOpenCategoryBottomSheet}
-              style={styles.shareButton}
+              style={styles.headerInnerContainer}
+              onPress={handleOpenCategoryBottomSheet}
             >
-              <Ionicons name="share-outline" size={32} color="black" />
+              <Text style={styles.headerTitle}>{categoryTitle}</Text>
+              <View style={styles.downArrowButton}>
+                <Ionicons name="caret-down-outline" size={20} color="white" />
+              </View>
             </TouchableOpacity>
+            <View></View>
           </View>
 
           {currentQuestions.length > 0 && typeof currentIndex === "number" && (
@@ -436,21 +430,10 @@ export default function CardScreen() {
                 flatListRef.current?.scrollToOffset({
                   offset: 0,
                   animated: false,
-                }); // Fallback
+                });
               }}
             />
           )}
-
-          {/* // onScroll={handleScroll}
-            // scrollEventThrottle={16}
-            // initialScrollIndex={currentIndex}
-            // getItemLayout={(data, index) => ({
-            //   length: wp(100),
-            //   offset: wp(100) * currentIndex,
-            //   index,
-            // })} */}
-
-          {/* <View style={styles.indicatorContainer}>{renderIndicator()}</View> */}
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity
@@ -492,9 +475,16 @@ export default function CardScreen() {
           </View>
         </View>
       </ScreenWrapper>
-      {/* {currentIndex === 20 && <PackBottomSheet ref={bottomSheetRef} />}
+      {(currentIndex === 20 || currentIndex === 10) && (
+        <PackBottomSheet ref={bottomSheetRef} />
+      )}
       <CategoryBottomSheet category={cardscreen} ref={categoryBottomSheetRef} />
-      <ResumeBottomSheet category={categoryTitle} ref={resumeBottomSheetRef} /> */}
+      <ResumeBottomSheet
+        category={categoryTitle}
+        handleStartOver={handleStartOver}
+        ref={resumeBottomSheetRef}
+      />
+      <PaymentBottomSheet ref={paymentBottomSheetRef} />
     </GestureHandlerRootView>
   );
 }
@@ -502,19 +492,24 @@ export default function CardScreen() {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    position: "relative",
+    // position: "relative",
   },
   header: {
     position: "relative",
     flexDirection: "row",
     backgroundColor: "#121212",
     padding: 15,
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: wp(95),
   },
-  backButton: {
-    position: "absolute",
-    left: 20,
-    padding: 5,
+  headerInnerContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    gap: 5,
   },
+  backButton: {},
   backButtonText: {
     fontSize: 28,
     fontWeight: "bold",
@@ -522,8 +517,6 @@ const styles = StyleSheet.create({
     fontFamily: "SyneFont",
   },
   headerTitle: {
-    flex: 1,
-    textAlign: "center",
     fontSize: 18,
     fontWeight: "600",
     color: "white",

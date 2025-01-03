@@ -142,6 +142,7 @@ const CategoryBottomSheet = forwardRef(({ category }, ref) => {
       snapPoints={snapPoints}
       enablePanDownToClose={true}
       backgroundStyle={styles.bottomSheetBackground}
+      index={-1}
     >
       <BottomSheetView style={styles.container}>
         <BottomSheetScrollView contentContainerStyle={styles.cardContainer}>

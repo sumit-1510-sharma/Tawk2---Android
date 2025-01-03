@@ -6,7 +6,7 @@ const PaymentBottomSheet = forwardRef((props, ref) => {
   return (
     <BottomSheet
       ref={ref}
-      snapPoints={["50%", "100%"]}
+      snapPoints={["100%"]}
       enablePanDownToClose
       backgroundStyle={styles.bottomSheetBackground}
     >

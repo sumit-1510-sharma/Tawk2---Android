@@ -3,16 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ResumeBottomSheet = forwardRef(({ category }, ref) => {
-  const handleStartOver = async () => {
-    try {
-      const key = `category_${category}`;
-      await AsyncStorage.removeItem(key);
-      console.log(`Cleared data for category ${category}`);
-    } catch (e) {
-      console.error("Error clearing category data", e);
-    }
-  };
+const ResumeBottomSheet = forwardRef(({ category, handleStartOver }, ref) => {
 
   // Handle Resume button
   const handleResume = useCallback(() => {
@@ -22,7 +13,7 @@ const ResumeBottomSheet = forwardRef(({ category }, ref) => {
   return (
     <BottomSheet
       ref={ref}
-      snapPoints={["25%", "50%"]}
+      snapPoints={["35%"]}
       enablePanDownToClose
       backgroundStyle={styles.bottomSheetBackground}
     >
