@@ -373,36 +373,35 @@ export default function CardScreen() {
   };
 
   return (
-    <GestureHandlerRootView>
-      <ScreenWrapper bg="#121212">
-        <StatusBar style="light" />
+    <ScreenWrapper bg="#121212">
+      <StatusBar style="light" />
 
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <View style={styles.indexTextContainer}>
-              <Text style={styles.indexText}>
-                {currentIndex + 1} / {currentQuestions.length}
-              </Text>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.headerInnerContainer}
+            onPress={handleOpenCategoryBottomSheet}
+          >
+            <Text style={styles.headerTitle}>{categoryTitle}</Text>
+            <View style={styles.downArrowButton}>
+              <Ionicons name="caret-down-outline" size={20} color="white" />
             </View>
+          </TouchableOpacity>
+          <View></View>
+        </View>
 
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
-              <Ionicons name="arrow-back" size={24} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.headerInnerContainer}
-              onPress={handleOpenCategoryBottomSheet}
-            >
-              <Text style={styles.headerTitle}>{categoryTitle}</Text>
-              <View style={styles.downArrowButton}>
-                <Ionicons name="caret-down-outline" size={20} color="white" />
-              </View>
-            </TouchableOpacity>
-            <View></View>
+        <View style={styles.flatlistContainer}>
+          <View style={styles.indexTextContainer}>
+            <Text style={styles.indexText}>
+              {currentIndex + 1} / {currentQuestions.length}
+            </Text>
           </View>
-
           {currentQuestions.length > 0 && typeof currentIndex === "number" && (
             <FlatList
               ref={flatListRef}
@@ -434,47 +433,44 @@ export default function CardScreen() {
               }}
             />
           )}
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={scrollToPrevious}
-              style={[
-                styles.button,
-                currentIndex === 0 && styles.disabledButton,
-              ]}
-              disabled={currentIndex === 0}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  currentIndex === 0 && styles.disabledButtonText,
-                ]}
-              >
-                Previous
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={scrollToNext}
-              style={[
-                styles.button,
-                currentIndex === currentQuestions.length - 1 &&
-                  styles.disabledButton,
-              ]}
-              disabled={currentIndex === currentQuestions.length - 1}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  currentIndex === currentQuestions.length - 1 &&
-                    styles.disabledButtonText,
-                ]}
-              >
-                Next
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
-      </ScreenWrapper>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            onPress={scrollToPrevious}
+            style={[styles.button, currentIndex === 0 && styles.disabledButton]}
+            disabled={currentIndex === 0}
+          >
+            <Text
+              style={[
+                styles.buttonText,
+                currentIndex === 0 && styles.disabledButtonText,
+              ]}
+            >
+              Previous
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={scrollToNext}
+            style={[
+              styles.button,
+              currentIndex === currentQuestions.length - 1 &&
+                styles.disabledButton,
+            ]}
+            disabled={currentIndex === currentQuestions.length - 1}
+          >
+            <Text
+              style={[
+                styles.buttonText,
+                currentIndex === currentQuestions.length - 1 &&
+                  styles.disabledButtonText,
+              ]}
+            >
+              Next
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       {(currentIndex === 20 || currentIndex === 10) && (
         <PackBottomSheet ref={bottomSheetRef} />
       )}
@@ -484,15 +480,15 @@ export default function CardScreen() {
         handleStartOver={handleStartOver}
         ref={resumeBottomSheetRef}
       />
+
       <PaymentBottomSheet ref={paymentBottomSheetRef} />
-    </GestureHandlerRootView>
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    // position: "relative",
   },
   header: {
     position: "relative",
@@ -550,10 +546,13 @@ const styles = StyleSheet.create({
   disabledButtonText: {
     color: "#aaa",
   },
+  flatlistContainer: {
+    position: "relative",
+  },
   indexTextContainer: {
     position: "absolute",
     zIndex: 1,
-    top: 70,
+    top: 10,
     right: 10,
     backgroundColor: "rgba(0, 0, 0, 0.5)", // Transparent black with 50% opacity
     borderRadius: 10, // Border radius for rounded corners

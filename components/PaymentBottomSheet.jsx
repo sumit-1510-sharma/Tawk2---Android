@@ -1,6 +1,9 @@
 import React, { forwardRef } from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet, {
+  BottomSheetModalProvider,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 
 const PaymentBottomSheet = forwardRef((props, ref) => {
   return (
@@ -12,39 +15,39 @@ const PaymentBottomSheet = forwardRef((props, ref) => {
     >
       <BottomSheetView style={styles.container}>
         {/* Header Image */}
-        <View style={styles.headerContainer}>
-          <View style={styles.phoneContainer}>
-            <View style={styles.phone}>
+        <BottomSheetView style={styles.headerContainer}>
+          <BottomSheetView style={styles.phoneContainer}>
+            <BottomSheetView style={styles.phone}>
               <Text style={styles.heartIcon}>❤️</Text>
-            </View>
-            <View style={[styles.phone, styles.phoneRight]}>
+            </BottomSheetView>
+            <BottomSheetView style={[styles.phone, styles.phoneRight]}>
               <Text style={styles.heartIcon}>❤️</Text>
-            </View>
-          </View>
-          <View style={styles.lineConnector} />
-        </View>
+            </BottomSheetView>
+          </BottomSheetView>
+          <BottomSheetView style={styles.lineConnector} />
+        </BottomSheetView>
 
         {/* Features */}
-        <View style={styles.featuresContainer}>
+        <BottomSheetView style={styles.featuresContainer}>
           <Text style={styles.featureText}>✔ Unlock all packs</Text>
           <Text style={styles.featureText}>✔ Unlimited questions</Text>
           <Text style={styles.featureText}>✔ Regularly updated</Text>
           <Text style={styles.featureText}>✔ No Ads</Text>
-        </View>
+        </BottomSheetView>
 
         {/* Pricing Options */}
-        <View style={styles.pricingContainer}>
+        <BottomSheetView style={styles.pricingContainer}>
           <TouchableOpacity style={styles.optionDisabled}>
             <Text style={styles.optionTextDisabled}>Weekly : 699 INR/week</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.optionActive}>
             <Text style={styles.optionTextActive}>Annual : 6999 INR/year</Text>
-            <View style={styles.introBadge}>
+            <BottomSheetView style={styles.introBadge}>
               <Text style={styles.introBadgeText}>Intro Offer</Text>
-            </View>
+            </BottomSheetView>
           </TouchableOpacity>
-        </View>
+        </BottomSheetView>
 
         {/* Money Back Guarantee */}
         <Text style={styles.moneyBackText}>14 Day Money-Back Guarantee</Text>
@@ -55,14 +58,14 @@ const PaymentBottomSheet = forwardRef((props, ref) => {
         </TouchableOpacity>
 
         {/* Footer */}
-        <View style={styles.footer}>
+        <BottomSheetView style={styles.footer}>
           <Text style={styles.footerText}>Auto Renews. Cancel anytime.</Text>
-          <View style={styles.footerLinks}>
+          <BottomSheetView style={styles.footerLinks}>
             <Text style={styles.footerLink}>Restore Purchase</Text>
             <Text style={styles.footerLink}>Privacy Policy</Text>
             <Text style={styles.footerLink}>Terms of Service</Text>
-          </View>
-        </View>
+          </BottomSheetView>
+        </BottomSheetView>
       </BottomSheetView>
     </BottomSheet>
   );

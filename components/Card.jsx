@@ -169,6 +169,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: wp(100),
+    zIndex: -1,
   },
   card: {
     backgroundColor: "white",
