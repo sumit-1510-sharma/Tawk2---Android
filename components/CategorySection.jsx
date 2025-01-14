@@ -109,6 +109,7 @@ export default function CategorySection({ category }) {
               title={card.title}
               description={card.description}
               style={styles.card}
+              index={index}
             />
           ))}
         </ScrollView>

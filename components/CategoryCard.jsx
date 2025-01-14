@@ -5,12 +5,14 @@ import {
   TouchableOpacity,
   View,
   Image,
+  Alert,
 } from "react-native";
 import React from "react";
 import { wp } from "../helpers/common";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function CategoryCard({ slug, title, description }) {
+export default function CategoryCard({ slug, title, description, index }) {
   const router = useRouter(); // Hook to handle navigation
 
   // Mapping categories to their respective images
@@ -32,8 +34,30 @@ export default function CategoryCard({ slug, title, description }) {
     "If You Knew Me...": require("../assets/images/iykmemoji.png"),
   };
 
-  const handlePress = () => {
-    router.push(`/cardscreen/${slug}`);
+  const handlePress = async () => {
+    try {
+      const isSubscribed = await AsyncStorage.getItem("isSubscribed");
+
+      if (isSubscribed === "true" || index < 3) {
+        // Allow access if the user is subscribed or the category index is within free range
+        router.push(`/cardscreen/${slug}`);
+      } else {
+        // Show alert for locked categories
+        Alert.alert(
+          "Upgrade Required",
+          "Unlock this category and more by upgrading to a premium account."
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Error reading subscription status from AsyncStorage",
+        error
+      );
+      Alert.alert(
+        "Error",
+        "Unable to check subscription status. Please try again."
+      );
+    }
   };
 
   return (

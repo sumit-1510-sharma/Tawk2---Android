@@ -9,7 +9,6 @@ import BottomSheet, {
 // const PackBottomSheet = forwardRef((props, ref) =>
 const CategoryBottomSheet = forwardRef(({ category }, ref) => {
   // Define groups of categories and their corresponding cards
-  console.log(category);
   const categoryGroups = {
     group1: [
       "deep_dark_secrets",

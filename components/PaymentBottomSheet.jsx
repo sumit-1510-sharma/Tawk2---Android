@@ -1,11 +1,77 @@
-import React, { forwardRef } from "react";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import React, { forwardRef, useContext, useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Pressable,
+} from "react-native";
 import BottomSheet, {
   BottomSheetModalProvider,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import * as InAppPurchases from "expo-iap";
+import { SubscriptionContext } from "../context/SubscriptionContext";
+import { useRouter } from "expo-router";
 
 const PaymentBottomSheet = forwardRef((props, ref) => {
+  const [products, setProducts] = useState([]);
+  const { updateSubscriptionStatus } = useContext(SubscriptionContext);
+  const router = useRouter();
+
+  const privacyPolicyURL =
+    "https://blankcanvasdesignco.github.io/Tawk2/privacy-policy.html";
+  const termsOfServiceURL =
+    "https://blankcanvasdesignco.github.io/Tawk2/terms-of-service.html";
+
+  const purchaseSubscription = async () => {
+    try {
+      // Step 1: Initialize the IAP connection
+      const connectionResult = await InAppPurchases.initConnection();
+      if (!connectionResult) {
+        throw new Error("Failed to initialize IAP connection.");
+      }
+      console.log("IAP connection initialized.");
+
+      // Step 2: Get subscriptions
+      const skus = ["tawk2.premium.weekly"];
+      const subscriptions = await InAppPurchases.getSubscriptions(skus);
+
+      console.log(subscriptions);
+      console.log(subscriptions[0]?.subscriptionOfferDetails[0]);
+      // console.log(subscriptions[0]?.subscriptionOfferDetails[0]?.pricingPhases);
+
+      if (!subscriptions || subscriptions.length === 0) {
+        throw new Error("No subscriptions found for the given SKUs.");
+      }
+
+      // Step 3: Request the subscription
+      const purchase = await InAppPurchases.requestSubscription({
+        skus: [subscriptions[0]?.productId],
+        subscriptionOffers: [
+          {
+            sku: subscriptions[0]?.productId,
+            offerToken:
+              subscriptions[0]?.subscriptionOfferDetails[0]?.offerToken,
+          },
+        ],
+      });
+
+      if (purchase) {
+        console.log("Subscription successful:", purchase);
+        updateSubscriptionStatus(true); // Update subscription status
+      }
+    } catch (error) {
+      console.error("Purchase error:", error);
+    } finally {
+      try {
+        await InAppPurchases.endConnection();
+      } catch (endConnectionError) {
+        console.error("Error ending IAP connection:", endConnectionError);
+      }
+    }
+  };
+
   return (
     <BottomSheet
       ref={ref}
@@ -37,23 +103,26 @@ const PaymentBottomSheet = forwardRef((props, ref) => {
 
         {/* Pricing Options */}
         <BottomSheetView style={styles.pricingContainer}>
-          <TouchableOpacity style={styles.optionDisabled}>
-            <Text style={styles.optionTextDisabled}>Weekly : 699 INR/week</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.optionActive}>
-            <Text style={styles.optionTextActive}>Annual : 6999 INR/year</Text>
-            <BottomSheetView style={styles.introBadge}>
-              <Text style={styles.introBadgeText}>Intro Offer</Text>
-            </BottomSheetView>
-          </TouchableOpacity>
+          <Text style={styles.pricingHeader}>Subscription Details:</Text>
+          <Text style={styles.pricingText}>
+            • Weekly plan: ₹10/week (auto-renews)
+          </Text>
+          <Text style={styles.pricingText}>
+            • 3-day free trial, then ₹10/week
+          </Text>
+          <Text style={styles.pricingText}>
+            • Cancel anytime through Google Play
+          </Text>
         </BottomSheetView>
 
         {/* Money Back Guarantee */}
-        <Text style={styles.moneyBackText}>14 Day Money-Back Guarantee</Text>
+        {/* <Text style={styles.moneyBackText}>14 Day Money-Back Guarantee</Text> */}
 
         {/* Continue Button */}
-        <TouchableOpacity style={styles.continueButton}>
+        <TouchableOpacity
+          onPress={() => purchaseSubscription()}
+          style={styles.continueButton}
+        >
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
 
@@ -62,8 +131,12 @@ const PaymentBottomSheet = forwardRef((props, ref) => {
           <Text style={styles.footerText}>Auto Renews. Cancel anytime.</Text>
           <BottomSheetView style={styles.footerLinks}>
             <Text style={styles.footerLink}>Restore Purchase</Text>
-            <Text style={styles.footerLink}>Privacy Policy</Text>
-            <Text style={styles.footerLink}>Terms of Service</Text>
+            <Pressable onPress={() => router.push(privacyPolicyURL)}>
+              <Text style={styles.footerLink}>Privacy Policy</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push(termsOfServiceURL)}>
+              <Text style={styles.footerLink}>Terms of Service</Text>
+            </Pressable>
           </BottomSheetView>
         </BottomSheetView>
       </BottomSheetView>
@@ -125,6 +198,12 @@ const styles = StyleSheet.create({
   pricingContainer: {
     width: "100%",
     marginBottom: 16,
+  },
+  pricingHeader: {
+    color: "white",
+  },
+  pricingText: {
+    color: "white",
   },
   optionDisabled: {
     backgroundColor: "#333",

@@ -35,14 +35,12 @@ export default function Favourites() {
 
   const fetchFavouriteQuestions = async (category) => {
     try {
-      console.log("Fetching favourite questions for category:", category);
       const db = await SQLite.openDatabaseAsync("ProductionDatabase");
       const rows = await db.getAllAsync(
         `SELECT * FROM favouritesTable WHERE category = ?`,
         [category]
       );
       const extractedQuestions = rows.map((item) => item.question);
-      console.log(extractedQuestions);
       setFavourites(extractedQuestions);
     } catch (e) {
       console.error("Error fetching current questions:", e);

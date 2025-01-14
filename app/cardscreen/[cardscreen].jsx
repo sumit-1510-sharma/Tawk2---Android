@@ -60,12 +60,8 @@ export default function CardScreen() {
       const savedIndex = await AsyncStorage.getItem(key);
       if (savedIndex !== null) {
         setCurrentIndex(parseInt(savedIndex, 10)); // Set the saved index
-        console.log(
-          `Retrieved index ${savedIndex} for category: ${categoryTitle}`
-        );
       } else {
         setCurrentIndex(0);
-        console.log(`No saved index for category: ${categoryTitle}`);
       }
     } catch (error) {
       console.error("Error fetching index from AsyncStorage:", error);
@@ -162,48 +158,37 @@ export default function CardScreen() {
   const fetchCurrentQuestions = async (category) => {
     let db;
     try {
-      console.log("Fetching questions for category:", category);
-
-      // Open a new database connection
       db = await SQLite.openDatabaseAsync("ProductionDatabase");
 
-      // Fetch the questions for the given category
       const rows = await db.getAllAsync(
         `SELECT * FROM questionsTable WHERE category = ? AND type = ?`,
         [category, "current"]
       );
 
-      // Extract the questions from the result rows
       const extractedQuestions = rows.map((item) => item.question);
 
-      // Append "Loading more questions..." to the list
       const questionsWithLoading = [
         ...extractedQuestions,
-        "Loading more questions...", // Add the extra item
+        "Loading more questions...",
       ];
 
       setCurrentQuestions(questionsWithLoading);
-      // console.log(questionsWithLoading);
-      console.log("Fetched and updated current questions successfully.");
     } catch (e) {
       console.error("Error fetching current questions:", e);
     } finally {
       // Ensure the database connection is closed after the operation
       if (db) {
         await db.closeAsync(); // Close the database connection
-        console.log("Database connection closed.");
       }
     }
   };
 
   const moveToHistory = async (db, category) => {
-    console.log(`Moving questions of category "${category}" to history`);
     try {
       await db.runAsync(
         `UPDATE questionsTable SET type = ? WHERE category = ? AND type = ?`,
         ["history", category, "current"]
       );
-      console.log("Moved current questions to history");
     } catch (error) {
       console.error("Error moving questions to history:", error);
       throw error;
@@ -211,7 +196,6 @@ export default function CardScreen() {
   };
 
   const addNewQuestions = async (db, category, questions) => {
-    console.log(`Adding new questions to category: "${category}"`);
     try {
       for (const question of questions) {
         await db.runAsync(
@@ -219,7 +203,6 @@ export default function CardScreen() {
           [category, question, "current", new Date().toISOString()]
         );
       }
-      console.log("New questions added successfully!");
     } catch (error) {
       console.error("Error adding new questions:", error);
       throw error;
@@ -229,30 +212,21 @@ export default function CardScreen() {
   const handleGenerateQuestions = async (category, newQuestions) => {
     let db;
     try {
-      db = await SQLite.openDatabaseAsync("ProductionDatabase"); // Open a single connection
-
-      // Step 1: Move current questions to history
+      db = await SQLite.openDatabaseAsync("ProductionDatabase");
       await moveToHistory(db, category);
-
-      // Step 2: Add new questions as current
       await addNewQuestions(db, category, newQuestions);
-
-      console.log("Questions updated successfully!");
     } catch (error) {
       console.error("Error in handleGenerateQuestions:", error);
-      throw error; // Ensure the caller knows if this fails
+      throw error;
     } finally {
       if (db) {
-        await db.closeAsync(); // Ensure the connection is closed
-        console.log("Database connection closed.");
+        await db.closeAsync();
       }
     }
   };
 
   const fetchMoreCards = async () => {
-    // setLoadingMore(true); // Show the loader
     try {
-      console.log("Fetching more cards...");
       const response = await fetch(
         "https://api.openai.com/v1/chat/completions",
         {
@@ -327,7 +301,6 @@ export default function CardScreen() {
     try {
       const key = `category_${categoryTitle}`;
       await AsyncStorage.setItem(key, index.toString());
-      console.log(`Index ${index} saved with key: ${key}`);
     } catch (error) {
       console.error("Error saving index to AsyncStorage:", error);
     }
@@ -361,12 +334,8 @@ export default function CardScreen() {
     try {
       const key = `category_${categoryTitle}`; // Replace with your dynamic category
       await AsyncStorage.removeItem(key);
-
-      // Scroll FlatList to the first index
       resumeBottomSheetRef.current.close();
       flatListRef.current?.scrollToIndex({ index: 0, animated: true });
-
-      console.log(`Cleared data for category ${categoryTitle}`);
     } catch (e) {
       console.error("Error clearing category data", e);
     }
@@ -378,6 +347,11 @@ export default function CardScreen() {
 
       <View style={styles.container}>
         <View style={styles.header}>
+          <View style={styles.indexTextContainer}>
+            <Text style={styles.indexText}>
+              {currentIndex + 1} / {currentQuestions.length}
+            </Text>
+          </View>
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
@@ -396,44 +370,37 @@ export default function CardScreen() {
           <View></View>
         </View>
 
-        <View style={styles.flatlistContainer}>
-          <View style={styles.indexTextContainer}>
-            <Text style={styles.indexText}>
-              {currentIndex + 1} / {currentQuestions.length}
-            </Text>
-          </View>
-          {currentQuestions.length > 0 && typeof currentIndex === "number" && (
-            <FlatList
-              ref={flatListRef}
-              data={currentQuestions}
-              renderItem={({ item, index }) => (
-                <Card item={item} category={categoryTitle} index={index} />
-              )}
-              keyExtractor={(item, index) => index.toString()}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              pagingEnabled
-              decelerationRate="fast"
-              snapToAlignment="center"
-              onEndReached={fetchMoreCards}
-              onEndReachedThreshold={0.5}
-              initialScrollIndex={currentIndex}
-              onMomentumScrollEnd={handleScroll}
-              getItemLayout={(data, index) => ({
-                length: wp(100), // Width of each item
-                offset: wp(100) * index,
-                index,
-              })}
-              onScrollToIndexFailed={(error) => {
-                console.warn("Scroll to index failed:", error);
-                flatListRef.current?.scrollToOffset({
-                  offset: 0,
-                  animated: false,
-                });
-              }}
-            />
-          )}
-        </View>
+        {currentQuestions.length > 0 && typeof currentIndex === "number" && (
+          <FlatList
+            ref={flatListRef}
+            data={currentQuestions}
+            renderItem={({ item, index }) => (
+              <Card item={item} category={categoryTitle} index={index} />
+            )}
+            keyExtractor={(item, index) => index.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+            decelerationRate="fast"
+            snapToAlignment="center"
+            onEndReached={fetchMoreCards}
+            onEndReachedThreshold={0.5}
+            initialScrollIndex={currentIndex}
+            onMomentumScrollEnd={handleScroll}
+            getItemLayout={(data, index) => ({
+              length: wp(100), // Width of each item
+              offset: wp(100) * index,
+              index,
+            })}
+            onScrollToIndexFailed={(error) => {
+              console.warn("Scroll to index failed:", error);
+              flatListRef.current?.scrollToOffset({
+                offset: 0,
+                animated: false,
+              });
+            }}
+          />
+        )}
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
@@ -552,7 +519,7 @@ const styles = StyleSheet.create({
   indexTextContainer: {
     position: "absolute",
     zIndex: 1,
-    top: 10,
+    top: 70,
     right: 10,
     backgroundColor: "rgba(0, 0, 0, 0.5)", // Transparent black with 50% opacity
     borderRadius: 10, // Border radius for rounded corners

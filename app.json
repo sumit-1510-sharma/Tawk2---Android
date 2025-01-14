@@ -2,7 +2,7 @@
   "expo": {
     "name": "Tawk2_android",
     "slug": "Tawk2_android",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/welcome.png",
     "scheme": "myapp",
@@ -33,7 +33,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-iap"
     ],
     "experiments": {
       "typedRoutes": true

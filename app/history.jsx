@@ -15,6 +15,10 @@ export default function History() {
   const [activeCategory, setActiveCategory] = useState("Deep Dark Secrets");
   const [historyQuestions, setHistoryQuestions] = useState([]);
 
+  useEffect(() => {
+    fetchHistoryQuestions(activeCategory);
+  }, [activeCategory]);
+
   const categories = [
     "Deep Dark Secrets",
     "Drama Club",
@@ -35,10 +39,6 @@ export default function History() {
 
   const fetchHistoryQuestions = async (category) => {
     try {
-      console.log(
-        "Fetching previously generated questions for category:",
-        category
-      );
       const db = await SQLite.openDatabaseAsync("ProductionDatabase");
       const rows = await db.getAllAsync(
         `SELECT * FROM questionsTable WHERE category = ? AND type = ?`,
@@ -50,10 +50,6 @@ export default function History() {
       console.error("Error fetching previously generated questions:", e);
     }
   };
-
-  useEffect(() => {
-    fetchHistoryQuestions(activeCategory);
-  }, [activeCategory]);
 
   return (
     <ScreenWrapper bg="#121212">
