@@ -1,43 +1,49 @@
 import React, { forwardRef, useCallback } from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ResumeBottomSheet = forwardRef(({ category, handleStartOver }, ref) => {
+const ResumeBottomSheet = forwardRef(
+  ({ category, handleStartOver, index }, ref) => {
+    // Calculate progress based on index
+    const progressWidth = `${(index / 30) * 100}%`; // Convert index to a percentage
 
-  // Handle Resume button
-  const handleResume = useCallback(() => {
-    ref.current?.close();
-  }, []);
+    // Handle Resume button
+    const handleResume = useCallback(() => {
+      ref.current?.close();
+    }, []);
 
-  return (
-    <BottomSheet
-      ref={ref}
-      snapPoints={["35%"]}
-      enablePanDownToClose
-      backgroundStyle={styles.bottomSheetBackground}
-    >
-      <BottomSheetView style={styles.container}>
-        <View style={styles.divider} />
-        <Text style={styles.title}>Resume or start over?</Text>
-        <BottomSheetView style={styles.buttonContainer}>
-          <TouchableOpacity style={[styles.button, styles.resumeButton]} onPress={handleResume}>
-            <Text style={styles.resumeButtonText}>Resume</Text>
-          </TouchableOpacity>
-          <View style={styles.progressBarContainer}>
-            <View style={styles.progressBar} />
-          </View>
-          <TouchableOpacity
-            style={[styles.button, styles.startOverButton]}
-            onPress={handleStartOver}
-          >
-            <Text style={styles.startOverButtonText}>Start over</Text>
-          </TouchableOpacity>
+    return (
+      <BottomSheet
+        ref={ref}
+        snapPoints={["35%"]}
+        enablePanDownToClose
+        backgroundStyle={styles.bottomSheetBackground}
+      >
+        <BottomSheetView style={styles.container}>
+          <View style={styles.divider} />
+          <Text style={styles.title}>Resume or start over?</Text>
+          <BottomSheetView style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.resumeButton]}
+              onPress={handleResume}
+            >
+              <Text style={styles.resumeButtonText}>Resume</Text>
+            </TouchableOpacity>
+            <View style={styles.progressBarContainer}>
+              <View style={[styles.progressBar, { width: progressWidth }]} />
+            </View>
+            <TouchableOpacity
+              style={[styles.button, styles.startOverButton]}
+              onPress={handleStartOver}
+            >
+              <Text style={styles.startOverButtonText}>Start over</Text>
+            </TouchableOpacity>
+          </BottomSheetView>
         </BottomSheetView>
-      </BottomSheetView>
-    </BottomSheet>
-  );
-});
+      </BottomSheet>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   bottomSheetBackground: {
@@ -98,7 +104,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   progressBar: {
-    width: "50%", // Adjust this value for dynamic progress
     height: "100%",
     backgroundColor: "#F96E46",
     borderRadius: 2,

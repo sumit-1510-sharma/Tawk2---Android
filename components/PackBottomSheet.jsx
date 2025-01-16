@@ -15,7 +15,7 @@ import BottomSheet, {
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Forward ref to allow parent components to control the BottomSheet
-const PackBottomSheet = forwardRef((props, ref) => {
+const PackBottomSheet = forwardRef(({ handleOpenPaymentBottomSheet }, ref) => {
   // Snap points for the BottomSheet
   const snapPoints = useMemo(() => ["50%"], []);
 
@@ -47,7 +47,10 @@ const PackBottomSheet = forwardRef((props, ref) => {
         <Text style={styles.subtitle}>Unlock all packs now.</Text>
 
         {/* Button Section */}
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity
+          onPress={handleOpenPaymentBottomSheet}
+          style={styles.button}
+        >
           <Text style={styles.buttonText}>Continue</Text>
         </TouchableOpacity>
 

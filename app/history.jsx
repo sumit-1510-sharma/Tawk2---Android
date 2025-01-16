@@ -10,14 +10,17 @@ import ScreenWrapper from "../components/ScreenWrapper";
 import { StatusBar } from "expo-status-bar";
 import QuesCard from "../components/QuesCard";
 import * as SQLite from "expo-sqlite";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function History() {
   const [activeCategory, setActiveCategory] = useState("Deep Dark Secrets");
   const [historyQuestions, setHistoryQuestions] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     fetchHistoryQuestions(activeCategory);
-  }, [activeCategory]);
+  }, [activeCategory, historyQuestions]);
 
   const categories = [
     "Deep Dark Secrets",
@@ -57,8 +60,11 @@ export default function History() {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Text style={styles.backButton}>{"<"}</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <Ionicons name="chevron-back" size={28} color={"white"} />
         </TouchableOpacity>
         <Text style={styles.title}>History</Text>
         <Text style={styles.placeholder}></Text>
@@ -95,14 +101,23 @@ export default function History() {
 
       {/* Cards Section */}
       <View style={styles.outerCardsContainer}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {historyQuestions.map((card, index) => (
-            <QuesCard key={index} text={card} categoryTab={activeCategory} />
-          ))}
-        </ScrollView>
+        {historyQuestions.length === 0 ? (
+          <Text style={styles.noResultsText}>No results</Text>
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {historyQuestions.map((card, index) => (
+              <QuesCard
+                key={index}
+                text={card}
+                categoryTab={activeCategory}
+                route={"history"}
+              />
+            ))}
+          </ScrollView>
+        )}
       </View>
     </ScreenWrapper>
   );
@@ -125,6 +140,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 20,
     fontFamily: "SyneFont",
+    marginRight: 20,
   },
   placeholder: {},
   outerTabsContainer: {
@@ -160,5 +176,12 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 20,
     marginHorizontal: 16,
+  },
+  noResultsText: {
+    fontSize: 18,
+    fontFamily: "SyneFont",
+    color: "gray",
+    textAlign: "center",
+    marginTop: 20,
   },
 });

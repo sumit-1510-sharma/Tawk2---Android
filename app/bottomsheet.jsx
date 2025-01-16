@@ -4,29 +4,42 @@ import React, {
   useRef,
   useEffect,
   useState,
+  useContext,
 } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet from "@gorhom/bottom-sheet";
 import PaymentBottomSheet from "../components/PaymentBottomSheet";
 import * as InAppPurchases from "expo-iap";
+import ScreenWrapper from "../components/ScreenWrapper";
+import { StatusBar } from "expo-status-bar";
+import { SubscriptionContext } from "../context/SubscriptionContext";
 
 export default function Bottomsheet() {
   // refs
   const paymentBottomSheetRef = useRef();
+  const { contextData } = useContext(SubscriptionContext);
 
   // callbacks
   const handleOpenPress = () => paymentBottomSheetRef.current.expand();
 
+  const handleConsoleContext = () => {
+    console.log(contextData);
+  };
+
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <ScreenWrapper style={styles.container}>
+      <StatusBar style="light" />
       <TouchableOpacity onPress={handleOpenPress} style={styles.button}>
         <Text style={styles.buttonText}>Open Payment Bottom Sheet</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleConsoleContext} style={styles.button}>
+        <Text style={styles.buttonText}>Context</Text>
       </TouchableOpacity>
 
       {/* Payment Bottom Sheet */}
       <PaymentBottomSheet ref={paymentBottomSheetRef} />
-    </GestureHandlerRootView>
+    </ScreenWrapper>
   );
 }
 

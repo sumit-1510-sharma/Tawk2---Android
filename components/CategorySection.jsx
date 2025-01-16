@@ -4,7 +4,10 @@ import CategoryCard from "./CategoryCard";
 import { useRouter } from "expo-router";
 import { hp, wp } from "../helpers/common";
 
-export default function CategorySection({ category }) {
+export default function CategorySection({
+  category,
+  handleOpenPaymentBottomSheet,
+}) {
   // Define card data for each category
   const categoryContent = {
     Fun: [
@@ -110,6 +113,7 @@ export default function CategorySection({ category }) {
               description={card.description}
               style={styles.card}
               index={index}
+              handleOpenPaymentBottomSheet={handleOpenPaymentBottomSheet}
             />
           ))}
         </ScrollView>

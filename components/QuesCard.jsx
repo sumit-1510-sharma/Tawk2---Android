@@ -1,13 +1,52 @@
-import React, { useRef } from "react";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import React, { useRef, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Pressable,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { hp, wp } from "../helpers/common";
 import ViewShot from "react-native-view-shot";
 import { shareAsync } from "expo-sharing";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import * as SQLite from "expo-sqlite";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-export default function QuesCard({ text, categoryTab }) {
+export default function QuesCard({ text, categoryTab, route }) {
   const cardRef = useRef();
+  const [isDialogVisible, setDialogVisible] = useState(false);
+
+  const handleDeleteFromFavourites = async () => {
+    try {
+      const db = await SQLite.openDatabaseAsync("ProductionDatabase");
+      const deleteQuery = `DELETE FROM favouritesTable WHERE category = ? AND question = ?;`;
+      await db.runAsync(deleteQuery, [categoryTab, text]);
+      setDialogVisible(false);
+    } catch (e) {
+      console.log("Error removing favourite question:", e);
+    }
+  };
+
+  const handleDeleteFromHistory = async () => {
+    try {
+      const db = await SQLite.openDatabaseAsync("ProductionDatabase");
+      const deleteQuery = `DELETE FROM questionsTable WHERE category = ? AND question = ? AND type = ?;`;
+      await db.runAsync(deleteQuery, [categoryTab, text, "history"]);
+      setDialogVisible(false);
+    } catch (e) {
+      console.log("Error removing question from questionsTable:", e);
+    }
+  };
+
+  const handleDelete = () => {
+    if (route === "favourites") {
+      handleDeleteFromFavourites();
+    } else if (route === "history") {
+      handleDeleteFromHistory();
+    }
+  };
 
   const handleShare = async () => {
     try {
@@ -65,12 +104,18 @@ export default function QuesCard({ text, categoryTab }) {
     <View style={styles.cardContainer}>
       <Text style={styles.cardTextMain}>{text}</Text>
       <View style={styles.iconContainer}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setDialogVisible(!isDialogVisible)}>
           <Ionicons name="ellipsis-vertical" size={20} color="#000" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleShare}>
           <Ionicons name="share-outline" size={20} color="#000" />
         </TouchableOpacity>
+
+        {isDialogVisible && (
+          <TouchableOpacity style={styles.dialogBox} onPress={handleDelete}>
+            <Text style={styles.dialogText}>Delete</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.hiddenContainer}>
@@ -91,10 +136,10 @@ export default function QuesCard({ text, categoryTab }) {
             </View>
           </View>
           <TouchableOpacity style={styles.favoriteButton}>
-            <MaterialIcons name="favorite" size={20} color="black" />
+            <Ionicons name="heart" size={32} color="black" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.shareButton}>
-            <FontAwesome name="share" size={20} color="black" />
+            <Ionicons name="share-outline" size={32} color="black" />
           </TouchableOpacity>
         </ViewShot>
       </View>
@@ -126,10 +171,35 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     // backgroundColor: "red",
+    position: "relative",
     justifyContent: "space-between",
     alignItems: "center",
     // gap: 20,
     minHeight: 60,
+  },
+  dialogBox: {
+    position: "absolute",
+    top: 12,
+    right: 30,
+    backgroundColor: "#BDEDFF",
+    opacity: 20,
+    borderRadius: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    width: 80,
+    padding: 4,
+    paddingHorizontal: 6,
+  },
+  dialogOption: {
+    padding: 10,
+  },
+  dialogText: {
+    color: "#000",
+    fontSize: 16,
+    fontFamily: "SyneFont",
   },
   hiddenContainer: {
     position: "absolute",
@@ -183,16 +253,14 @@ const styles = StyleSheet.create({
     position: "absolute", // Absolute positioning
     bottom: 10, // Position from the top of the container
     left: 16, // Position from the left of the container
-    backgroundColor: "rgba(255, 255, 255, 0.7)", // Optional: button background
+    background: "transparent", //
     borderRadius: 20, // Rounded button
-    padding: 10,
   },
   shareButton: {
     position: "absolute", // Absolute positioning
     bottom: 10, // Position from the top of the container
     right: 16, // Position from the right of the container
-    backgroundColor: "rgba(255, 255, 255, 0.7)", // Optional: button background
+    backgound: "transparent",
     borderRadius: 20, // Rounded button
-    padding: 10,
   },
 });

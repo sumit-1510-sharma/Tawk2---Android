@@ -7,13 +7,22 @@ import {
   Image,
   Alert,
 } from "react-native";
-import React from "react";
+import React, { useContext } from "react";
 import { wp } from "../helpers/common";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SubscriptionContext } from "../context/SubscriptionContext";
 
-export default function CategoryCard({ slug, title, description, index }) {
+export default function CategoryCard({
+  slug,
+  title,
+  description,
+  index,
+  handleOpenPaymentBottomSheet,
+}) {
   const router = useRouter(); // Hook to handle navigation
+  const { contextData } = useContext(SubscriptionContext);
+  const { isSubscribed } = useContext(SubscriptionContext);
 
   // Mapping categories to their respective images
   const categoryImages = {
@@ -36,23 +45,13 @@ export default function CategoryCard({ slug, title, description, index }) {
 
   const handlePress = async () => {
     try {
-      const isSubscribed = await AsyncStorage.getItem("isSubscribed");
-
-      if (isSubscribed === "true" || index < 3) {
-        // Allow access if the user is subscribed or the category index is within free range
+      if (isSubscribed === "true" || index < 1) {
         router.push(`/cardscreen/${slug}`);
       } else {
-        // Show alert for locked categories
-        Alert.alert(
-          "Upgrade Required",
-          "Unlock this category and more by upgrading to a premium account."
-        );
+        handleOpenPaymentBottomSheet();
       }
     } catch (error) {
-      console.error(
-        "Error reading subscription status from AsyncStorage",
-        error
-      );
+      console.error("Error reading subscription status from context", error);
       Alert.alert(
         "Error",
         "Unable to check subscription status. Please try again."
@@ -68,6 +67,11 @@ export default function CategoryCard({ slug, title, description, index }) {
       )}
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.description}>{description}</Text>
+      {contextData[title] && (
+        <View style={styles.newGenerationTag}>
+          <Text style={styles.newGenerationTagText}>New questions added</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 }
@@ -100,5 +104,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "SyneFont",
     color: "rgba(204, 204, 204, 0.5)",
+  },
+  newGenerationTag: {
+    position: "absolute",
+    top: -10,
+    right: 0,
+    backgroundColor: "white",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+  },
+  newGenerationTagText: {
+    color: "black",
+    fontFamily: "SyneFont",
+    fontSize: 12,
   },
 });

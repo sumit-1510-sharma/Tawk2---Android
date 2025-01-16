@@ -15,66 +15,138 @@ import { SubscriptionContext } from "../context/SubscriptionContext";
 import { useRouter } from "expo-router";
 
 const PaymentBottomSheet = forwardRef((props, ref) => {
-  const [products, setProducts] = useState([]);
-  const { updateSubscriptionStatus } = useContext(SubscriptionContext);
-  const router = useRouter();
+  // const [products, setProducts] = useState([]);
+  // const { updateSubscriptionStatus } = useContext(SubscriptionContext);
+  // const router = useRouter();
 
-  const privacyPolicyURL =
-    "https://blankcanvasdesignco.github.io/Tawk2/privacy-policy.html";
-  const termsOfServiceURL =
-    "https://blankcanvasdesignco.github.io/Tawk2/terms-of-service.html";
+  // const privacyPolicyURL =
+  //   "https://blankcanvasdesignco.github.io/Tawk2/privacy-policy.html";
+  // const termsOfServiceURL =
+  //   "https://blankcanvasdesignco.github.io/Tawk2/terms-of-service.html";
 
-  const purchaseSubscription = async () => {
-    try {
-      // Step 1: Initialize the IAP connection
-      const connectionResult = await InAppPurchases.initConnection();
-      if (!connectionResult) {
-        throw new Error("Failed to initialize IAP connection.");
+  // const purchaseSubscription = async () => {
+  //   try {
+  //     const connectionResult = await InAppPurchases.initConnection();
+  //     if (!connectionResult) {
+  //       throw new Error("Failed to initialize IAP connection.");
+  //     }
+  //     console.log("IAP connection initialized.");
+
+  //     // Step 2: Get subscriptions
+  //     const skus = ["tawk2.premium.weekly"];
+  //     const subscriptions = await InAppPurchases.getSubscriptions(skus);
+
+  //     if (!subscriptions || subscriptions.length === 0) {
+  //       throw new Error("No subscriptions found for the given SKUs.");
+  //     }
+
+  //     const purchase = await InAppPurchases.requestSubscription({
+  //       skus: [subscriptions[0]?.productId],
+  //       subscriptionOffers: [
+  //         {
+  //           sku: subscriptions[0]?.productId,
+  //           offerToken:
+  //             subscriptions[0]?.subscriptionOfferDetails[0]?.offerToken,
+  //         },
+  //       ],
+  //     });
+
+  //   } catch (error) {
+  //     console.error("Purchase error:", error);
+  //   } finally {
+  //     try {
+  //       await InAppPurchases.endConnection();
+  //     } catch (endConnectionError) {
+  //       console.error("Error ending IAP connection:", endConnectionError);
+  //     }
+  //   }
+  // };
+
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const initIAP = async () => {
+      try {
+        setLoading(true);
+        const connectionResult = await InAppPurchases.initConnection();
+        if (!connectionResult) {
+          throw new Error("Failed to initialize IAP connection.");
+        }
+        console.log("IAP connection initialized.");
+      } catch (error) {
+        console.error("Error initializing IAP:", error);
+      } finally {
+        setLoading(false);
       }
-      console.log("IAP connection initialized.");
+    };
 
-      // Step 2: Get subscriptions
+    initIAP();
+
+    const purchaseUpdate = InAppPurchases.purchaseUpdatedListener(
+      async (purchase) => {
+        console.log("Purchase updated:", purchase);
+        if (purchase.transactionReceipt) {
+          try {
+            await InAppPurchases.acknowledgePurchaseAndroid(
+              purchase.purchaseToken
+            );
+            console.log("Purchase acknowledged");
+            setIsSubscribed(true);
+          } catch (acknowledgeError) {
+            console.error("Error acknowledging purchase:", acknowledgeError);
+          }
+        }
+      }
+    );
+
+    const purchaseError = InAppPurchases.purchaseErrorListener((error) => {
+      console.error("Purchase error:", error);
+    });
+
+    return () => {
+      purchaseUpdate.remove();
+      purchaseError.remove();
+      InAppPurchases.endConnection().catch((endConnectionError) =>
+        console.error("Error ending IAP connection:", endConnectionError)
+      );
+    };
+  }, []);
+
+  const handlePurchase = async () => {
+    try {
       const skus = ["tawk2.premium.weekly"];
       const subscriptions = await InAppPurchases.getSubscriptions(skus);
 
-      console.log(subscriptions);
-      console.log(subscriptions[0]?.subscriptionOfferDetails[0]);
-      // console.log(subscriptions[0]?.subscriptionOfferDetails[0]?.pricingPhases);
+      const offerToken =
+        subscriptions[0]?.subscriptionOfferDetails[0]?.offerToken;
 
-      if (!subscriptions || subscriptions.length === 0) {
-        throw new Error("No subscriptions found for the given SKUs.");
+      if (!offerToken) {
+        throw new Error("No offer token available for the subscription.");
       }
 
-      // Step 3: Request the subscription
-      const purchase = await InAppPurchases.requestSubscription({
+      setLoading(true);
+
+      await InAppPurchases.requestSubscription({
         skus: [subscriptions[0]?.productId],
         subscriptionOffers: [
           {
             sku: subscriptions[0]?.productId,
-            offerToken:
-              subscriptions[0]?.subscriptionOfferDetails[0]?.offerToken,
+            offerToken,
           },
         ],
       });
-
-      if (purchase) {
-        console.log("Subscription successful:", purchase);
-        updateSubscriptionStatus(true); // Update subscription status
-      }
+      console.log("Subscription purchase requested.");
     } catch (error) {
-      console.error("Purchase error:", error);
+      console.error("Error during subscription purchase:", error);
     } finally {
-      try {
-        await InAppPurchases.endConnection();
-      } catch (endConnectionError) {
-        console.error("Error ending IAP connection:", endConnectionError);
-      }
+      setLoading(false);
     }
   };
 
   return (
     <BottomSheet
       ref={ref}
+      index={-1}
       snapPoints={["100%"]}
       enablePanDownToClose
       backgroundStyle={styles.bottomSheetBackground}
@@ -120,7 +192,7 @@ const PaymentBottomSheet = forwardRef((props, ref) => {
 
         {/* Continue Button */}
         <TouchableOpacity
-          onPress={() => purchaseSubscription()}
+          onPress={() => handlePurchase()}
           style={styles.continueButton}
         >
           <Text style={styles.continueButtonText}>Continue</Text>

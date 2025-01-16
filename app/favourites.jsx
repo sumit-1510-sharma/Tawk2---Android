@@ -10,10 +10,13 @@ import ScreenWrapper from "../components/ScreenWrapper";
 import { StatusBar } from "expo-status-bar";
 import QuesCard from "../components/QuesCard";
 import * as SQLite from "expo-sqlite";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 export default function Favourites() {
   const [activeCategory, setActiveCategory] = useState("Deep Dark Secrets");
   const [favourites, setFavourites] = useState([]);
+  const router = useRouter();
 
   const categories = [
     "Deep Dark Secrets",
@@ -49,149 +52,7 @@ export default function Favourites() {
 
   useEffect(() => {
     fetchFavouriteQuestions(activeCategory);
-  }, [activeCategory]);
-
-  const cards = {
-    "Deep Dark Secrets": [
-      { id: 1, text: "What's a secret you've been keeping for years?" },
-      {
-        id: 2,
-        text: "Have you ever done something illegal and not told anyone?",
-      },
-      {
-        id: 3,
-        text: "What’s your most embarrassing moment that no one knows?",
-      },
-      { id: 4, text: "What’s a guilty pleasure you’ve never confessed?" },
-      { id: 5, text: "What’s the darkest thought you’ve ever had?" },
-      {
-        id: 6,
-        text: "Have you ever lied about something serious to someone close?",
-      },
-    ],
-    "Drama Club": [
-      { id: 1, text: "What’s the most dramatic moment you’ve witnessed?" },
-      {
-        id: 2,
-        text: "Have you ever been in the middle of someone else’s drama?",
-      },
-      { id: 3, text: "What’s a time you made a scene in public?" },
-      { id: 4, text: "Who is the most dramatic person in your family?" },
-      { id: 5, text: "What’s the biggest argument you’ve ever been in?" },
-    ],
-    "Forbidden Confessions": [
-      { id: 1, text: "What’s something you’ve done that you know was wrong?" },
-      {
-        id: 2,
-        text: "Have you ever had feelings for someone you shouldn’t have?",
-      },
-      { id: 3, text: "What’s a rule you broke and never admitted?" },
-      { id: 4, text: "What’s a secret you’ve kept from your best friend?" },
-      { id: 5, text: "Have you ever betrayed someone’s trust?" },
-    ],
-    "Mystery Moments": [
-      {
-        id: 1,
-        text: "What’s the strangest thing that’s ever happened to you?",
-      },
-      {
-        id: 2,
-        text: "Have you ever encountered something you couldn’t explain?",
-      },
-      { id: 3, text: "What’s the biggest mystery in your life right now?" },
-      { id: 4, text: "Have you ever felt like you were being watched?" },
-      { id: 5, text: "What’s the creepiest experience you’ve ever had?" },
-    ],
-    "The Unfiltered Truth": [
-      { id: 1, text: "What’s one truth you’re scared to admit?" },
-      { id: 2, text: "Have you ever lied to save yourself?" },
-      { id: 3, text: "What’s something you’ve never told your family?" },
-      { id: 4, text: "What’s the hardest truth you’ve ever heard?" },
-      { id: 5, text: "What’s a truth you wish more people knew about you?" },
-    ],
-    "Fantasies & Desires": [
-      { id: 1, text: "What’s your wildest dream you hope to achieve?" },
-      { id: 2, text: "What’s your ultimate romantic fantasy?" },
-      { id: 3, text: "If money weren’t an issue, what would you do?" },
-      { id: 4, text: "What’s a place you’ve always dreamed of visiting?" },
-      { id: 5, text: "What’s a hidden desire you’ve never shared?" },
-    ],
-    "The Love Files": [
-      { id: 1, text: "What’s your favorite memory of being in love?" },
-      { id: 2, text: "What’s the most romantic thing you’ve ever done?" },
-      { id: 3, text: "What’s a deal-breaker in a relationship for you?" },
-      { id: 4, text: "What’s the most important lesson love has taught you?" },
-      { id: 5, text: "Who was your first crush, and why?" },
-    ],
-    "Forever Questions": [
-      { id: 1, text: "What’s something you could never live without?" },
-      { id: 2, text: "What’s a promise you’ve made and kept forever?" },
-      { id: 3, text: "What’s a belief you’ll hold onto forever?" },
-      { id: 4, text: "What’s the most meaningful relationship in your life?" },
-      { id: 5, text: "What’s a memory you’ll cherish forever?" },
-    ],
-    "Through Thick and Thin": [
-      { id: 1, text: "Who’s the one person you can always count on?" },
-      {
-        id: 2,
-        text: "What’s the hardest challenge you’ve overcome together with someone?",
-      },
-      { id: 3, text: "What’s a friendship that has stood the test of time?" },
-      { id: 4, text: "What’s the most loyal thing someone has done for you?" },
-      { id: 5, text: "What’s a time you proved your loyalty to someone?" },
-    ],
-    "Untold Memories": [
-      { id: 1, text: "What’s a memory you never talk about?" },
-      { id: 2, text: "What’s a moment in your life that changed everything?" },
-      { id: 3, text: "What’s a childhood memory you still hold dear?" },
-      { id: 4, text: "What’s a memory you’d love to relive?" },
-      { id: 5, text: "What’s a bittersweet memory you’ll never forget?" },
-    ],
-    "The Meaning of Life": [
-      { id: 1, text: "What’s your personal philosophy on life?" },
-      { id: 2, text: "What do you think is the purpose of your life?" },
-      { id: 3, text: "What’s the most important thing to you in life?" },
-      { id: 4, text: "What’s a lesson life has taught you recently?" },
-      { id: 5, text: "How do you define happiness in your life?" },
-    ],
-    "Future Fantasies": [
-      { id: 1, text: "What’s a future goal you’re excited about?" },
-      { id: 2, text: "What’s your dream career, and why?" },
-      { id: 3, text: "Where do you see yourself in 10 years?" },
-      { id: 4, text: "What’s a future adventure you want to go on?" },
-      { id: 5, text: "What’s one thing you hope to achieve in life?" },
-    ],
-    "Courage & Fears": [
-      { id: 1, text: "What’s a fear you’ve conquered?" },
-      { id: 2, text: "What’s the bravest thing you’ve ever done?" },
-      { id: 3, text: "What’s a fear you still struggle with?" },
-      { id: 4, text: "What’s something that takes courage to admit?" },
-      {
-        id: 5,
-        text: "What’s a situation that pushed you out of your comfort zone?",
-      },
-    ],
-    "The Bucket List": [
-      { id: 1, text: "What’s one thing on your bucket list?" },
-      { id: 2, text: "What’s a dream experience you want to have?" },
-      { id: 3, text: "What’s a country you’ve always wanted to visit?" },
-      { id: 4, text: "What’s an activity you’d try at least once in life?" },
-      { id: 5, text: "What’s a goal you’ve been putting off for too long?" },
-    ],
-    "If You Knew Me…": [
-      { id: 1, text: "What’s one thing people misunderstand about you?" },
-      {
-        id: 2,
-        text: "What’s something you’ve never told anyone about yourself?",
-      },
-      { id: 3, text: "What’s the most surprising thing about you?" },
-      { id: 4, text: "What’s a talent or skill you rarely talk about?" },
-      {
-        id: 5,
-        text: "What’s a part of your personality most people don’t see?",
-      },
-    ],
-  };
+  }, [activeCategory, favourites]);
 
   return (
     <ScreenWrapper bg="#121212">
@@ -199,8 +60,11 @@ export default function Favourites() {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Text style={styles.backButton}>{"<"}</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <Ionicons name="chevron-back" size={28} color={"white"} />
         </TouchableOpacity>
         <Text style={styles.title}>Favourites</Text>
         <Text style={styles.placeholder}></Text>
@@ -237,14 +101,23 @@ export default function Favourites() {
 
       {/* Cards Section */}
       <View style={styles.outerCardsContainer}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {favourites.map((card, index) => (
-            <QuesCard key={index} text={card} categoryTab={activeCategory} />
-          ))}
-        </ScrollView>
+        {favourites.length === 0 ? (
+          <Text style={styles.noResultsText}>No results</Text>
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {favourites.map((card, index) => (
+              <QuesCard
+                key={index}
+                text={card}
+                categoryTab={activeCategory}
+                route={"favourites"}
+              />
+            ))}
+          </ScrollView>
+        )}
       </View>
     </ScreenWrapper>
   );
@@ -267,6 +140,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 20,
     fontFamily: "SyneFont",
+    marginRight: 20,
   },
   placeholder: {},
   outerTabsContainer: {
@@ -302,5 +176,12 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 20,
     marginHorizontal: 16,
+  },
+  noResultsText: {
+    fontSize: 18,
+    fontFamily: "SyneFont",
+    color: "gray",
+    textAlign: "center",
+    marginTop: 20,
   },
 });

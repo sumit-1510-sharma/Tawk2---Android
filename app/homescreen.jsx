@@ -16,11 +16,17 @@ import { wp } from "../helpers/common";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
+import PaymentBottomSheet from "../components/PaymentBottomSheet";
 
-const Homescreen = () => {
+export default function Homescreen() {
   const [activeTab, setActiveTab] = useState("Fun");
   const flatListRef = useRef(null);
   const router = useRouter();
+  const paymentBottomSheetRef = useRef();
+
+  const handleOpenPaymentBottomSheet = () => {
+    paymentBottomSheetRef.current.expand();
+  };
 
   const tabs = [
     { key: "Fun", category: "Fun" },
@@ -45,7 +51,10 @@ const Homescreen = () => {
     <ScreenWrapper bg="#121212" style={styles.container}>
       <StatusBar style="light" />
       <View style={styles.header}>
-        <TouchableOpacity style={styles.unlockPacks}>
+        <TouchableOpacity
+          onPress={handleOpenPaymentBottomSheet}
+          style={styles.unlockPacks}
+        >
           <Text>Unlock all packs now. Let's go </Text>
           <Ionicons
             name="arrow-forward-circle-outline"
@@ -72,7 +81,10 @@ const Homescreen = () => {
         keyExtractor={(item) => item.key}
         renderItem={({ item }) => (
           <View style={styles.content}>
-            <CategorySection category={item.category} />
+            <CategorySection
+              category={item.category}
+              handleOpenPaymentBottomSheet={handleOpenPaymentBottomSheet}
+            />
           </View>
         )}
         onMomentumScrollEnd={onMomentumScrollEnd}
@@ -97,9 +109,10 @@ const Homescreen = () => {
           </TouchableOpacity>
         ))}
       </View>
+      <PaymentBottomSheet ref={paymentBottomSheetRef} />
     </ScreenWrapper>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -178,5 +191,3 @@ const styles = StyleSheet.create({
     color: "#fff", // Active tab text color
   },
 });
-
-export default Homescreen;

@@ -6,14 +6,20 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import React from "react";
+import React, { useRef } from "react";
 import { StatusBar } from "expo-status-bar";
 import ScreenWrapper from "../components/ScreenWrapper";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import PaymentBottomSheet from "../components/PaymentBottomSheet";
 
 export default function Profile() {
   const router = useRouter();
+  const paymentBottomSheetRef = useRef();
+
+  const handleOpenPaymentBottomSheet = () => {
+    paymentBottomSheetRef.current.expand();
+  };
 
   return (
     <ScreenWrapper bg="#121212">
@@ -27,7 +33,10 @@ export default function Profile() {
         {/* Banner */}
         <View style={styles.banner}>
           <Text style={styles.bannerText}>Get closer to your close ones.</Text>
-          <TouchableOpacity style={styles.unlockButton}>
+          <TouchableOpacity
+            onPress={handleOpenPaymentBottomSheet}
+            style={styles.unlockButton}
+          >
             <Text style={styles.unlockText}>Unlock all packs</Text>
           </TouchableOpacity>
           <View style={styles.profileIcon}>
@@ -92,6 +101,7 @@ export default function Profile() {
         {/* Footer */}
         <Text style={styles.footerText}>Version 1.0</Text>
       </View>
+      <PaymentBottomSheet ref={paymentBottomSheetRef} />
     </ScreenWrapper>
   );
 }

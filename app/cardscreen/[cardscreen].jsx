@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   StyleSheet,
   Text,
@@ -21,6 +21,7 @@ import CategoryBottomSheet from "../../components/CategoryBottomSheet";
 import { Ionicons } from "@expo/vector-icons";
 import ResumeBottomSheet from "../../components/ResumeBottomSheet";
 import PaymentBottomSheet from "../../components/PaymentBottomSheet";
+import { SubscriptionContext } from "../../context/SubscriptionContext";
 
 export default function CardScreen() {
   const { cardscreen } = useLocalSearchParams(); // Get the dynamic category from URL
@@ -37,6 +38,12 @@ export default function CardScreen() {
   const categoryBottomSheetRef = useRef();
   const resumeBottomSheetRef = useRef();
   const paymentBottomSheetRef = useRef();
+  const { updateContext } = useContext(SubscriptionContext);
+  const { contextData } = useContext(SubscriptionContext);
+
+  const handleOpenPaymentBottomSheet = () => {
+    paymentBottomSheetRef.current.expand();
+  };
 
   useEffect(() => {
     // Set the categoryTitle based on cardscreen
@@ -281,6 +288,8 @@ export default function CardScreen() {
 
       await handleGenerateQuestions(categoryTitle, parsedContent.questions);
       await AsyncStorage.removeItem(`category_${categoryTitle}`);
+
+      updateContext(categoryTitle, "new questions generated");
       router.back();
     } catch (error) {
       console.error("Error fetching more cards:", error);
@@ -408,6 +417,7 @@ export default function CardScreen() {
             style={[styles.button, currentIndex === 0 && styles.disabledButton]}
             disabled={currentIndex === 0}
           >
+            <Ionicons name="chevron-back" size={28} color={"white"} />
             <Text
               style={[
                 styles.buttonText,
@@ -435,19 +445,37 @@ export default function CardScreen() {
             >
               Next
             </Text>
+            <Ionicons name="chevron-forward" size={28} color={"white"} />
           </TouchableOpacity>
         </View>
       </View>
-      {(currentIndex === 20 || currentIndex === 10) && (
-        <PackBottomSheet ref={bottomSheetRef} />
+      {contextData[categoryTitle] && (
+        <View style={styles.newGenerationTag}>
+          <Text style={styles.newGenerationTagText}>
+            ✨ This pack has new set of questions
+          </Text>
+        </View>
       )}
-      <CategoryBottomSheet category={cardscreen} ref={categoryBottomSheetRef} />
-      <ResumeBottomSheet
-        category={categoryTitle}
-        handleStartOver={handleStartOver}
-        ref={resumeBottomSheetRef}
-      />
 
+      {(currentIndex === 20 || currentIndex === 10) && (
+        <PackBottomSheet
+          ref={bottomSheetRef}
+          handleOpenPaymentBottomSheet={handleOpenPaymentBottomSheet}
+        />
+      )}
+      <CategoryBottomSheet
+        category={cardscreen}
+        handleOpenPaymentBottomSheet={handleOpenPaymentBottomSheet}
+        ref={categoryBottomSheetRef}
+      />
+      {currentIndex > 0 && currentIndex < currentQuestions.length - 1 && (
+        <ResumeBottomSheet
+          category={categoryTitle}
+          handleStartOver={handleStartOver}
+          index={currentIndex}
+          ref={resumeBottomSheetRef}
+        />
+      )}
       <PaymentBottomSheet ref={paymentBottomSheetRef} />
     </ScreenWrapper>
   );
@@ -490,14 +518,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginVertical: 20,
-    width: "80%",
+    width: "90%",
   },
   button: {
-    backgroundColor: "#333",
     padding: 10,
     borderRadius: 5,
-    width: 100,
     alignItems: "center",
+    flexDirection: "row",
   },
   buttonText: {
     color: "white",
@@ -508,10 +535,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   disabledButton: {
-    backgroundColor: "#ddd",
-  },
-  disabledButtonText: {
-    color: "#aaa",
+    opacity: 0.5,
   },
   flatlistContainer: {
     position: "relative",
@@ -541,5 +565,18 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: "white",
     marginHorizontal: 4,
+  },
+  newGenerationTag: {
+    position: "absolute",
+    bottom: 20,
+    alignSelf: "center",
+    backgroundColor: "#717171",
+    borderRadius: 4,
+    padding: 8,
+  },
+  newGenerationTagText: {
+    color: "white",
+    fontFamily: "SyneFont",
+    fontSize: 16,
   },
 });
